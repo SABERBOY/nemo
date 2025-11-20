@@ -1,8 +1,10 @@
 version: '3'
 services:
   nemoService:
-    container_name: nemo
-    image: yunxindev/nemo-api:1.0
+    container_name: nemo-go
+    build:
+      context: ./go-nemo
+      dockerfile: Dockerfile
     environment:
       APPKEY: ${APPKEY} # 添加云信appkey
       APPSECRET: ${APPSECRET} # 添加云信APPSECRET
