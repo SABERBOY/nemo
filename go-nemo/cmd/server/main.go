@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"netease-kit/nemo/internal/controller"
+	"netease-kit/nemo/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -32,6 +33,17 @@ func main() {
 	gameController := controller.NewGameController()
 	ktvController := controller.NewKtvController()
 	songController := controller.NewSongController()
+	musicPlayerController := controller.NewMusicPlayerController()
+	sudController := controller.NewSudController()
+
+	// Notify Controller Dependencies
+	entLiveService := service.NewEntLiveService()
+	musicService := service.NewMusicPlayService()
+	ktvService := service.NewKtvService()
+	imEventService := service.NewImEventService()
+	notifyService := service.NewNotifyService(entLiveService, musicService, ktvService)
+	notifyController := controller.NewNotifyController(notifyService, imEventService)
+	redisQueueController := controller.NewRedisQueueController()
 
 	nemoGroup := r.Group("/nemo/app")
 	{
@@ -69,6 +81,21 @@ func main() {
 			songGroup.POST("/cleanUserOrderSongs", songController.CleanUserOrderSongs)
 			songGroup.POST("/getMusicToken", songController.GetMusicToken)
 		}
+
+		// Music Player Routes
+		musicGroup := entLiveGroup.Group("/music")
+		{
+			musicGroup.GET("/info", musicPlayerController.GetPlayMusicInfo)
+			musicGroup.POST("/action", musicPlayerController.MusicAction)
+			musicGroup.POST("/ready", musicPlayerController.MusicReady)
+		}
+
+		// Notify Routes
+		notifyGroup := entLiveGroup.Group("/nim")
+		{
+			notifyGroup.POST("/notify", notifyController.Notify)
+			notifyGroup.POST("/im-event-notify", notifyController.ImEventNotify)
+		}
 	}
 
 	socialChatGroup := r.Group("/nemo/socialChat")
@@ -76,6 +103,9 @@ func main() {
 		socialChatGroup.POST("/user/reporter", socialChatController.Reporter)
 		socialChatGroup.GET("/user/getOnLineUser", socialChatController.GetOnLineUser)
 		socialChatGroup.POST("/user/reward", socialChatController.UserReward)
+		socialChatGroup.POST("/user/login", socialChatController.Login)
+		socialChatGroup.POST("/user/getUserState", socialChatController.GetUserState)
+		socialChatGroup.POST("/user/getUserInfo", socialChatController.GetUserInfo)
 	}
 
 	gameGroup := r.Group("/nemo/game")
@@ -85,6 +115,29 @@ func main() {
 		gameGroup.POST("/join", gameController.JoinGame)
 		gameGroup.POST("/start", gameController.StartGame)
 		gameGroup.POST("/end", gameController.EndGame)
+		gameGroup.POST("/exit", gameController.ExitGame)
+		gameGroup.GET("/members", gameController.GetGameMembers)
+		gameGroup.GET("/gameInfo", gameController.GetGameInfo)
+		gameGroup.GET("/status-reporter", gameController.StatusReporter)
+
+		sudGroup := gameGroup.Group("/sud")
+		{
+			sudGroup.POST("/login", sudController.Login)
+
+			userGroup := sudGroup.Group("/user")
+			{
+				userGroup.POST("/get_sstoken", sudController.GetSSToken)
+				userGroup.POST("/update_sstoken", sudController.UpdateSSToken)
+				userGroup.POST("/get_user_info", sudController.GetUserInfo)
+				userGroup.POST("/report_game_info", sudController.ReportGameInfo)
+			}
+		}
+	}
+
+	redisQueueGroup := r.Group("/nemo/redis-queue")
+	{
+		redisQueueGroup.POST("/send", redisQueueController.Send)
+		redisQueueGroup.POST("/cancel", redisQueueController.Cancel)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

@@ -110,3 +110,75 @@ func (ctrl *GameController) EndGame(c *gin.Context) {
 
 	response.Success(c, nil)
 }
+
+func (ctrl *GameController) ExitGame(c *gin.Context) {
+	var param dto.GameRoomParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		response.Failed(c, 400, "Invalid parameters")
+		return
+	}
+
+	userUuid := c.GetHeader("userUuid")
+	if userUuid == "" {
+		response.Failed(c, 401, "User not identified")
+		return
+	}
+
+	err := ctrl.GameService.ExitGame(userUuid, param)
+	if err != nil {
+		response.Failed(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, nil)
+}
+
+func (ctrl *GameController) GetGameMembers(c *gin.Context) {
+	var param dto.GameRoomParam
+	if err := c.ShouldBindQuery(&param); err != nil {
+		response.Failed(c, 400, "Invalid parameters")
+		return
+	}
+
+	userUuid := c.GetHeader("userUuid")
+	members, err := ctrl.GameService.GetGameRoomMembers(userUuid, param)
+	if err != nil {
+		response.Failed(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, members)
+}
+
+func (ctrl *GameController) GetGameInfo(c *gin.Context) {
+	var param dto.GameInfoParam
+	if err := c.ShouldBindQuery(&param); err != nil {
+		response.Failed(c, 400, "Invalid parameters")
+		return
+	}
+
+	info, err := ctrl.GameService.GetGameInfo(param)
+	if err != nil {
+		response.Failed(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, info)
+}
+
+func (ctrl *GameController) StatusReporter(c *gin.Context) {
+	var param dto.GameRoomParam
+	if err := c.ShouldBindQuery(&param); err != nil {
+		response.Failed(c, 400, "Invalid parameters")
+		return
+	}
+
+	userUuid := c.GetHeader("userUuid")
+	err := ctrl.GameService.StatusReporter(userUuid, param)
+	if err != nil {
+		response.Failed(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, nil)
+}

@@ -195,3 +195,48 @@ func (s *SocialChatService) SaveRtcRecord(appKey string, param dto.RtcRoomNotify
 	jsonBytes, _ := json.Marshal(info)
 	return s.RDB.HSet(ctx, key, fmt.Sprintf("%d", param.ChannelId), string(jsonBytes)).Err()
 }
+
+func (s *SocialChatService) Login(userUuid, deviceId string) (*dto.UserDto, error) {
+	user, err := s.UserRepo.SelectByUserUuid(userUuid)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	return &dto.UserDto{
+		UserUuid:  user.UserUuid,
+		UserName:  user.UserName,
+		Icon:      user.Icon,
+		UserToken: user.UserToken,
+		ImToken:   user.ImToken,
+		Sex:       user.Sex,
+		Mobile:    user.Mobile,
+	}, nil
+}
+
+func (s *SocialChatService) GetUserState(appKey, mobile string) (string, error) {
+	// Simplified implementation: always return "0" (Idle)
+	return "0", nil
+}
+
+func (s *SocialChatService) GetUserInfo(appKey, userUuid, deviceId string) (*dto.UserDto, error) {
+	user, err := s.UserRepo.SelectByUserUuid(userUuid)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	return &dto.UserDto{
+		UserUuid:  user.UserUuid,
+		UserName:  user.UserName,
+		Icon:      user.Icon,
+		UserToken: user.UserToken,
+		ImToken:   user.ImToken,
+		Sex:       user.Sex,
+		Mobile:    user.Mobile,
+	}, nil
+}

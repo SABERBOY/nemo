@@ -80,7 +80,11 @@ type ServerConfig struct {
 var AppConfig Config
 
 func InitConfig() {
-	viper.SetConfigName("application-local")
+	configName := "application"
+	if viper.GetString("env") == "local" {
+		configName = "application-local"
+	}
+	viper.SetConfigName(configName)
 	viper.SetConfigType("yaml")
 	// Search paths:
 	// 1. Original Java resources (for easy dev)
@@ -90,8 +94,18 @@ func InitConfig() {
 	viper.AddConfigPath("./config")
 	viper.AddConfigPath(".")
 
+	viper.AutomaticEnv() // Add this line
+
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Error reading config file: %s", err)
+		// If application-local not found, try application
+		if configName != "application" {
+			viper.SetConfigName("application")
+			if err := viper.ReadInConfig(); err != nil {
+				log.Fatalf("Error reading config file: %s", err)
+			}
+		} else {
+			log.Fatalf("Error reading config file: %s", err)
+		}
 	}
 
 	if err := viper.Unmarshal(&AppConfig); err != nil {

@@ -36,3 +36,7 @@ type GameRoomMemberDto struct {
 	Avatar   string `json:"avatar"`
 	Status   int    `json:"status"`
 }
+
+type GameInfoParam struct {
+	RoomUuid string `form:"roomUuid"`
+}

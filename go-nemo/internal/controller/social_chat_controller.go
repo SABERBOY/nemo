@@ -79,3 +79,56 @@ func (ctrl *SocialChatController) UserReward(c *gin.Context) {
 
 	response.Success(c, nil)
 }
+
+func (ctrl *SocialChatController) Login(c *gin.Context) {
+	userUuid := c.GetString("userUuid")
+	deviceId := c.GetHeader("deviceId")
+
+	user, err := ctrl.SocialChatService.Login(userUuid, deviceId)
+	if err != nil {
+		response.Failed(c, 500, err.Error())
+		return
+	}
+	response.Success(c, user)
+}
+
+type GetUserStateParam struct {
+	Mobile string `json:"mobile" binding:"required"`
+}
+
+func (ctrl *SocialChatController) GetUserState(c *gin.Context) {
+	var param GetUserStateParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		response.Failed(c, 400, "Invalid parameters")
+		return
+	}
+
+	appKey := c.GetString("appKey")
+	state, err := ctrl.SocialChatService.GetUserState(appKey, param.Mobile)
+	if err != nil {
+		response.Failed(c, 500, err.Error())
+		return
+	}
+	response.Success(c, state)
+}
+
+type GetUserInfoParam struct {
+	UserUuid string `json:"userUuid" binding:"required"`
+	DeviceId string `json:"deviceId"`
+}
+
+func (ctrl *SocialChatController) GetUserInfo(c *gin.Context) {
+	var param GetUserInfoParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		response.Failed(c, 400, "Invalid parameters")
+		return
+	}
+
+	appKey := c.GetString("appKey")
+	user, err := ctrl.SocialChatService.GetUserInfo(appKey, param.UserUuid, param.DeviceId)
+	if err != nil {
+		response.Failed(c, 500, err.Error())
+		return
+	}
+	response.Success(c, user)
+}

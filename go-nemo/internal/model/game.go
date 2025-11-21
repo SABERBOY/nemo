@@ -33,3 +33,10 @@ type GameMember struct {
 	CreateTime    time.Time `gorm:"autoCreateTime" json:"createTime"`
 	UpdateTime    time.Time `gorm:"autoUpdateTime" json:"updateTime"`
 }
+
+type GameReport struct {
+	Id           uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
+	GameRecordId uint64    `json:"gameRecordId"`
+	ReportMsg    string    `gorm:"type:text" json:"reportMsg"`
+	CreateTime   time.Time `gorm:"autoCreateTime" json:"createTime"`
+}

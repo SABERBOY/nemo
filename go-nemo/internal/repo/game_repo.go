@@ -35,6 +35,22 @@ func (r *GameRecordRepository) UpdateStatus(id uint64, status int) error {
 	return r.DB.Model(&model.GameRecord{}).Where("id = ?", id).Update("game_status", status).Error
 }
 
+func (r *GameRecordRepository) SelectByPrimaryKey(id uint64) (*model.GameRecord, error) {
+	var record model.GameRecord
+	result := r.DB.First(&record, id)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+	return &record, nil
+}
+
+func (r *GameRecordRepository) Delete(id uint64) error {
+	return r.DB.Delete(&model.GameRecord{}, id).Error
+}
+
 type GameMemberRepository struct {
 	DB *gorm.DB
 }
@@ -67,4 +83,20 @@ func (r *GameMemberRepository) SelectByUserUuidAndGameRecordId(userUuid string, 
 
 func (r *GameMemberRepository) UpdateStatus(id uint64, status int) error {
 	return r.DB.Model(&model.GameMember{}).Where("id = ?", id).Update("status", status).Error
+}
+
+func (r *GameMemberRepository) DeleteByGameRecordId(gameRecordId uint64) error {
+	return r.DB.Where("game_record_id = ?", gameRecordId).Delete(&model.GameMember{}).Error
+}
+
+type GameReportRepository struct {
+	DB *gorm.DB
+}
+
+func NewGameReportRepository() *GameReportRepository {
+	return &GameReportRepository{DB: db.DB}
+}
+
+func (r *GameReportRepository) Insert(report *model.GameReport) error {
+	return r.DB.Create(report).Error
 }

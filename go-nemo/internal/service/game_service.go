@@ -131,6 +131,66 @@ func (s *GameService) EndGame(userUuid string, param dto.GameRoomParam) error {
 	return s.GameRecordRepo.UpdateStatus(record.Id, 2) // Ended
 }
 
+func (s *GameService) ExitGame(userUuid string, param dto.GameRoomParam) error {
+	record, err := s.GameRecordRepo.SelectByRoomUuid(param.RoomUuid)
+	if err != nil {
+		return err
+	}
+	if record == nil {
+		return errors.New("game not found")
+	}
+
+	member, err := s.GameMemberRepo.SelectByUserUuidAndGameRecordId(userUuid, record.Id)
+	if err != nil {
+		return err
+	}
+	if member != nil {
+		return s.GameMemberRepo.UpdateStatus(member.Id, 2) // Left
+	}
+	return nil
+}
+
+func (s *GameService) GetGameRoomMembers(userUuid string, param dto.GameRoomParam) ([]dto.GameRoomMemberDto, error) {
+	record, err := s.GameRecordRepo.SelectByRoomUuid(param.RoomUuid)
+	if err != nil {
+		return nil, err
+	}
+	if record == nil {
+		return []dto.GameRoomMemberDto{}, nil
+	}
+
+	members, err := s.GameMemberRepo.SelectByGameRecordId(record.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	var dtos []dto.GameRoomMemberDto
+	for _, m := range members {
+		dtos = append(dtos, dto.GameRoomMemberDto{
+			UserUuid: m.UserUuid,
+			UserName: m.UserName,
+			Status:   m.Status,
+		})
+	}
+	return dtos, nil
+}
+
+func (s *GameService) GetGameInfo(param dto.GameInfoParam) (*dto.GameRoomInfoDto, error) {
+	record, err := s.GameRecordRepo.SelectByRoomUuid(param.RoomUuid)
+	if err != nil {
+		return nil, err
+	}
+	if record == nil {
+		return nil, errors.New("game not found")
+	}
+	return s.toGameRoomInfoDto(record), nil
+}
+
+func (s *GameService) StatusReporter(userUuid string, param dto.GameRoomParam) error {
+	// Just a placeholder for now, as per Java implementation it might update status or heartbeat
+	return nil
+}
+
 func (s *GameService) toGameRoomInfoDto(record *model.GameRecord) *dto.GameRoomInfoDto {
 	return &dto.GameRoomInfoDto{
 		GameId:        record.GameId,

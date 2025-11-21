@@ -15,6 +15,7 @@ type LiveRecord struct {
 	LiveType      int       `gorm:"default:1" json:"liveType"`                          // 1: Interactive Live, 2: Voice Room, 3: KTV
 	LiveConfig    string    `gorm:"type:varchar(1024)" json:"liveConfig"`
 	SingMode      int       `gorm:"default:0" json:"singMode"` // 0: Smart Chorus, 1: Serial, 2: NTP Realtime, 3: Solo
+	ChatRoomId    int64     `gorm:"index:idx_chat_room_id" json:"chatRoomId"`
 	CreateTime    time.Time `gorm:"autoCreateTime" json:"createTime"`
 	UpdateTime    time.Time `gorm:"autoUpdateTime" json:"updateTime"`
 }

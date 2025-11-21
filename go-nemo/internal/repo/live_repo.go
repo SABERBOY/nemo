@@ -75,6 +75,18 @@ func (r *LiveRecordRepository) SelectById(id uint64) (*model.LiveRecord, error) 
 	return &record, nil
 }
 
+func (r *LiveRecordRepository) SelectByChatRoomId(chatRoomId int64) (*model.LiveRecord, error) {
+	var record model.LiveRecord
+	result := r.DB.Where("chat_room_id = ?", chatRoomId).First(&record)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+	return &record, nil
+}
+
 type LiveRewardRepository struct {
 	DB *gorm.DB
 }

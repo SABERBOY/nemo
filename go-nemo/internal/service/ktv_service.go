@@ -203,6 +203,24 @@ func (s *KtvService) ChorusReady(userUuid string, param dto.FinishChorusReadyPar
 	return &dto.ChorusControlResultDto{Code: 200, Msg: "Ready"}, nil
 }
 
+func (s *KtvService) CleanOrderSongs(liveRecordId uint64) error {
+	songs, _ := s.OrderSongRepo.SelectByLiveRecordId(liveRecordId)
+	for _, song := range songs {
+		s.OrderSongRepo.Delete(song.Id)
+	}
+	return nil
+}
+
+func (s *KtvService) CleanSingInfo(roomUuid string) error {
+	// TODO: Implement Redis cleanup for sing info
+	return nil
+}
+
+func (s *KtvService) EndSingWhenMemberOut(roomUuid string, userUuid string, oldOrderSongs []*dto.OrderSongDto) error {
+	// TODO: Implement logic to handle singing user leaving
+	return nil
+}
+
 // Helper
 func (s *KtvService) buildOrderSongDto(song *model.OrderSong) *dto.OrderSongDto {
 	user, _ := s.UserRepo.SelectByUserUuid(song.UserUuid)
