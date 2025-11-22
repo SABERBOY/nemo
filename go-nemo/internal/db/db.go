@@ -21,8 +21,8 @@ func InitDB() {
 	// JDBC: jdbc:mysql://127.0.0.1:3306/nemo?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
 	// Go DSN: user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local
 
-	dsn := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/nemo?charset=utf8mb4&parseTime=True&loc=Local",
-		cfg.Username, cfg.Password)
+	dsn := fmt.Sprintf("%s:%s@%s",
+		cfg.Username, cfg.Password, cfg.Url) // Skip "jdbc:" prefix
 
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
